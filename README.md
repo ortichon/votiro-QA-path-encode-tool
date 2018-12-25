@@ -7,3 +7,6 @@
 4) go to the folder and edit `go.bat`
 5) change the folder path to the desired one (use " " if you have whitespace in the folder path)
 6) save and run the bat file
+
+## Limitations
+does not recursively scan sub-folders (will be implemented on request)
