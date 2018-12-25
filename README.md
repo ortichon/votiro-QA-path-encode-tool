@@ -1,0 +1,1 @@
+# votiro-QA-path-encode-tool
