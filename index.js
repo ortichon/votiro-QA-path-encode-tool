@@ -4,14 +4,29 @@ const exec = require('child_process').exec;
 
 const OUTPUT_NAME = 'output.txt';
 
-const dirname = process.argv[2];
+const requiredPath = process.argv[2];
+let isFolder;
 
 Promise.resolve()
-    .then(() => readFiles(dirname))
+    .then(() => checkIsFolder(requiredPath))
+    .then(() => isFolder ? readFiles(requiredPath) : readLines(requiredPath))
     .then(filePaths => encodeFilePaths(filePaths))
     .then(encodedFilePaths => saveToFile(encodedFilePaths))
     .then(() => openFileList())
+    .catch(err => console.error(err));
 
+
+function checkIsFolder(path) {
+    return new Promise((resolve, reject) => {
+        fs.lstat(path, (err, stats) => {
+            if (err) {
+                reject(err);
+            }
+            isFolder = stats.isDirectory(); 
+            resolve();
+        })
+    })
+}
 
 function readFiles(dirname) {
     return new Promise((resolve, reject) => {
@@ -24,10 +39,21 @@ function readFiles(dirname) {
     })
 }
 
+function readLines(path) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(path, (err, data) => {
+            if (err) {
+                reject(err);
+            }
+            resolve(data.toString().split(/\r\n|\r|\n/));
+        })
+    })
+}
+
 function encodeFilePaths(filePaths) {
     return Promise.resolve()
     .then(() => filePaths.map(filePath => {
-        const fullFilePath = path.join(dirname, filePath);
+        const fullFilePath = isFolder ? path.join(dirname, filePath) : filePath;
         return encodeURI(fullFilePath);
     }))
 }
@@ -57,4 +83,3 @@ function openFileList() {
     const commandLine = getCommandLine();
     exec(`${commandLine} ${OUTPUT_NAME}`);
 }
-
